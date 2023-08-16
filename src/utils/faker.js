@@ -8,7 +8,6 @@ import {
     getResponseHeaderMap,
     defaultResponseHeaders,
 } from './headers';
-import { arrayEquals } from './array';
 import { getNormalizedUrl } from './url';
 
 let global =
@@ -34,10 +33,18 @@ export class Faker {
 
     getRequests = () => Object.values(this.requestMap);
 
-    getKey = (url = '', searchParamKeys = [], method = 'GET') =>
-        url && method
-            ? [url, ...searchParamKeys, method.toLowerCase()].join('_')
-            : '';
+    getKey = (url = '', method = 'GET') =>
+        url && method ? [url, method.toLowerCase()].join('_') : '';
+
+    getPath = (url) => {
+        const { origin, pathname } = new URL(url);
+
+        if (pathname === '/') {
+            return pathname;
+        }
+
+        return url.replace(origin, '');
+    };
 
     makeInitialRequestMap = (requests) => {
         if (!requests || !Array.isArray(requests)) {
@@ -52,7 +59,7 @@ export class Faker {
 
     add = (request) => {
         const { path, searchParamKeys } = getNormalizedUrl(request.url);
-        const key = this.getKey(path, searchParamKeys, request.method);
+        const key = this.getKey(request.url, request.method);
         this.requestMap[key] = {
             ...request,
             path,
@@ -66,8 +73,7 @@ export class Faker {
 
     update = (item, fieldKey, value) => {
         const { url, method } = item;
-        const { path, searchParamKeys } = getNormalizedUrl(url);
-        const itemKey = this.getKey(path, searchParamKeys, method);
+        const itemKey = this.getKey(url, method);
 
         if (
             // eslint-disable-next-line no-prototype-builtins
@@ -80,17 +86,15 @@ export class Faker {
     };
 
     matchMock = (url, method = 'GET') => {
-        const { path, searchParamKeys } = getNormalizedUrl(url);
+        const path = this.getPath(url);
 
         for (let key in this.requestMap) {
             const { url: requestUrl, method: requestMethod } =
                 this.requestMap[key];
-            const { path: requestPath, searchParamKeys: requestSearchKeys } =
-                getNormalizedUrl(requestUrl);
+            const requestPath = this.getPath(requestUrl);
             if (
                 match(requestPath)(path) &&
                 method == requestMethod &&
-                arrayEquals(searchParamKeys, requestSearchKeys) &&
                 !this.requestMap[key].skip
             ) {
                 return this.requestMap[key];
