@@ -36,8 +36,26 @@ export class Faker {
     getKey = (url = '', method = 'GET') =>
         url && method ? [url, method.toLowerCase()].join('_') : '';
 
+    isUrl = (url) => {
+        try {
+            new URL(url);
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
     getPath = (url) => {
-        const { origin, pathname } = new URL(url);
+        let fullUrl;
+
+        try {
+            fullUrl = new URL(url);
+        } catch {
+            return false;
+        }
+
+        const { origin, pathname } = fullUrl;
 
         if (pathname === '/') {
             return pathname;

@@ -8,6 +8,7 @@
     "storybook": "yarn run build && start-storybook -p 6006 --no-manager-cache",
     "clean": "rm -rf dist",
     "build": "yarn run clean && babel src -d dist --ignore **/*.test.js",
+    "build:watch": "yarn run clean && babel src -d dist --ignore **/*.test.js --watch",
     "lint": "eslint .",
     "lint:fix": "yarn run lint --fix",
     "test": "jest src",

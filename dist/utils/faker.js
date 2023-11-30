@@ -38,11 +38,28 @@ class Faker {
       return url && method ? [url, method.toLowerCase()].join('_') : '';
     });
 
+    _defineProperty(this, "isUrl", url => {
+      try {
+        new URL(url);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    });
+
     _defineProperty(this, "getPath", url => {
+      var fullUrl;
+
+      try {
+        fullUrl = new URL(url);
+      } catch (_unused) {
+        return false;
+      }
+
       var {
         origin,
         pathname
-      } = new URL(url);
+      } = fullUrl;
 
       if (pathname === '/') {
         return pathname;
